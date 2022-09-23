@@ -1,0 +1,36 @@
+Assembly Code:
+Line	OP Code	OP Name	L	M
+0	7	INC	0	6
+1	10	RED	0	2
+2	4	STO	0	3
+3	10	RED	0	2
+4	4	STO	0	4
+5	1	LIT	0	0
+6	4	STO	0	5
+7	5	CAL	0	9
+8	8	JMP	0	25
+9	7	INC	0	3
+10	3	LOD	1	4
+11	1	LIT	0	0
+12	2	EQL	0	5
+13	9	JPC	0	15
+14	6	RTN	0	0
+15	3	LOD	1	5
+16	3	LOD	1	3
+17	2	ADD	0	1
+18	4	STO	1	5
+19	3	LOD	1	4
+20	1	LIT	0	1
+21	2	SUB	0	2
+22	4	STO	1	4
+23	5	CAL	1	9
+24	6	RTN	0	0
+25	3	LOD	0	5
+26	10	WRT	0	1
+27	10	HLT	0	3
+
+
+Input : 				
+Input : 				
+Output : 14
+				
