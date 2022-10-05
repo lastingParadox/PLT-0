@@ -153,8 +153,8 @@ void execute(int trace_flag, instruction *code)
 			print_stack(pc, bp, sp, stack);
 		}
 
-		free(stack);
 	}
+	free(stack);
 }
 
 int base(int *stack, int BP, int L)
