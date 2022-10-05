@@ -93,7 +93,7 @@ void execute(int trace_flag, instruction *code)
 				break;
 			case 4: 
 				// STO
-				stack[base(stack, bp, ir.l)] = stack[sp];
+				stack[base(stack, bp, ir.l) + ir.m] = stack[sp];
 				sp--;
 				break;
 			case 5:
