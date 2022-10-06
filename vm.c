@@ -101,12 +101,12 @@ void execute(int trace_flag, instruction *code)
 				stack[sp + 1] = base(stack, bp, ir.l);
 				stack[sp + 2] = bp;
 				stack[sp + 3] = pc;
-				bp = sp++;
+				bp = sp + 1;
 				pc = ir.m;
 				break;
 			case 6:
 				// RTN
-				sp = sp + ir.m;
+				sp = bp - 1;
 				bp = stack[sp + 2];
 				pc = stack[sp + 3];
 				break;
