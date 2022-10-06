@@ -1,0 +1,28 @@
+var x;
+var y;
+var z;
+const one := 1;
+var result;
+procedure MULT;
+begin
+	read x;
+	read y;
+	read z;
+	result := 0;
+	call MULT;
+	def MULT {
+		begin
+			if y == 0 then
+				return;
+			result := result + x;
+			y := y - one;
+			call MULT
+		end
+	};
+	x := result;
+	result := 0;
+	y := z;
+	call MULT;
+	write result;	
+end.
+
