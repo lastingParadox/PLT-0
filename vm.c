@@ -24,6 +24,7 @@ void execute(int trace_flag, instruction *code)
 		printf("Initial Values:\t\t\t0\t0\t-1\n");
 	}
 
+	// Initializes stack and variables
 	int* stack = (int*) calloc(ARRAY_SIZE, sizeof(int));
 	int bp = 0;
 	int sp = -1;
@@ -156,7 +157,6 @@ void execute(int trace_flag, instruction *code)
 				}
 				break;
 		}
-
 		if (trace_flag) {
 			print_stack(pc, bp, sp, stack);
 		}
@@ -165,6 +165,7 @@ void execute(int trace_flag, instruction *code)
 	free(stack);
 }
 
+// This function returns an integer representing the base of the activation record
 int base(int *stack, int BP, int L)
 {
 	while (L > 0)
@@ -175,7 +176,8 @@ int base(int *stack, int BP, int L)
 	return BP;
 }
 
-
+// Prints the program counter, base pointer, and stack pointer before printing
+// stack contents (after execution)
 void print_stack(int PC, int BP, int SP, int *stack)
 {
 	int i;
@@ -185,6 +187,8 @@ void print_stack(int PC, int BP, int SP, int *stack)
 	printf("\n");
 }
 
+// Function utilizing switch case that reads in the instruction register opcode
+// to print out contents only if trace flag is true 
 void print_instruction(int PC, instruction IR)
 {
 	char opname[4];
