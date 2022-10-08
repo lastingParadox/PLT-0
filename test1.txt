@@ -1,0 +1,12 @@
+const a := 3;
+var x;
+begin
+x := 12;
+if x != 12 then
+x:=12;
+while a < x do
+x := x / 2;
+if 7 <= x * 4 then
+x := (18 + 3) / 7;
+return;
+end.

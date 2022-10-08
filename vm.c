@@ -1,3 +1,11 @@
+/* 
+ *  Written by:
+ *    Samuel Georgis
+ *    Evan Goldsmith
+ *    Sean Jackson
+ *    Zander Preston
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
