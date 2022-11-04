@@ -1,0 +1,44 @@
+Lexeme List: 
+lexeme		token type
+          .	17
+      const	3
+         ==	23
+       xyz3	1
+         :=	18
+         71	2
+          ;	20
+        var	4
+         !=	24
+  procedure	5
+          <	25
+       call	6
+         <=	26
+      begin	7
+          >	27
+        end	8
+         >=	28
+         if	9
+          +	29
+       then	10
+          -	19
+      while	11
+          *	30
+         do	12
+          /	31
+       read	13
+          (	32
+      write	14
+          )	33
+        def	16
+          {	21
+          }	22
+     return	15
+Lexical Analyzer Error: identifiers cannot be named 'null' or 'main'
+Lexical Analyzer Error: identifiers cannot be named 'null' or 'main'
+   mainnull	1
+Lexical Analyzer Error: maximum number length is 5
+Lexical Analyzer Error: identifiers cannot begin with digits
+Lexical Analyzer Error: maximum identifier length is 11
+Lexical Analyzer Error: maximum number length is 5
+Lexical Analyzer Error: invalid symol
+

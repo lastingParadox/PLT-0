@@ -1,0 +1,11 @@
+end const x := 3 ? comment
+var y ? %#$
+procedure A
+begin
+13 := xA32 * + - / ( ) ? comments
+if == > >= < <= != then
+while do
+return
+; ; ;
+read write
+def } { . ? comment

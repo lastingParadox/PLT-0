@@ -1,0 +1,8 @@
+end const x:=3
+var y ? %#$
+procedure A
+begin
+13:=xA32*+-/()if==>>=<<=!=then
+while do
+return;;;read write
+def}{.

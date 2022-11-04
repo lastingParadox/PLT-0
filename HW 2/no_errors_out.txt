@@ -1,0 +1,43 @@
+Lexeme List: 
+lexeme		token type
+        end	8
+      const	3
+          x	1
+         :=	18
+          3	2
+        var	4
+          y	1
+  procedure	5
+          A	1
+      begin	7
+         13	2
+         :=	18
+       xA32	1
+          *	30
+          +	29
+          -	19
+          /	31
+          (	32
+          )	33
+         if	9
+         ==	23
+          >	27
+         >=	28
+          <	25
+         <=	26
+         !=	24
+       then	10
+      while	11
+         do	12
+     return	15
+          ;	20
+          ;	20
+          ;	20
+       read	13
+      write	14
+        def	16
+          }	22
+          {	21
+          .	17
+
+Parser Error 1: missing . 

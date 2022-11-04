@@ -1,0 +1,25 @@
+Lexeme List: 
+lexeme		token type
+Lexical Analyzer Error: maximum identifier length is 11
+Lexical Analyzer Error: maximum identifier length is 11
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: identifiers cannot begin with digits
+Lexical Analyzer Error: identifiers cannot begin with digits
+Lexical Analyzer Error: maximum number length is 5
+Lexical Analyzer Error: maximum number length is 5
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: invalid symol
+Lexical Analyzer Error: identifiers cannot be named 'null' or 'main'
+Lexical Analyzer Error: identifiers cannot be named 'null' or 'main'
+

@@ -1,0 +1,10 @@
+.const==xyz3:=71;var!=procedure<call<=begin>end>=if+then-while*do/read(write)def{}return
+? now i'll do the errors, notice how the invalid symbols are ignored when they're in the comment %
+main
+null
+mainnull
+123456
+123a
+abcedef123456
+123456abcdef
+#
