@@ -1,3 +1,11 @@
+/* 
+ *  Written by:
+ *    Samuel Georgis
+ *    Evan Goldsmith
+ *    Sean Jackson
+ *    Zander Preston
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,7 +25,6 @@ void print_lexeme_list(lexeme *list, int list_end);
 
 lexeme *lex_analyze(int list_flag, char *input)
 {
-	// your code here
 	lexeme *list = (lexeme*) calloc(ARRAY_SIZE, sizeof(lexeme));
 	int input_index = 0;
 	int lex_index = 0;
@@ -26,42 +33,57 @@ lexeme *lex_analyze(int list_flag, char *input)
 
 	char *buffer = (char*) calloc(MAX_IDENT_LENGTH + 1, sizeof(char));
 
-	while (input[input_index] != '\0') {
-
-		if (error_flag) {
-			return NULL;
-		}
-
+	while (input[input_index] != '\0')
+	{	
 		int value = input[input_index];
 
-		if (iscntrl(value) || isspace(value)) {
+		// Clearing buffer and its index
+		strcpy(buffer, "");
+		buffer_index = 0;
+
+		if (iscntrl(value) || isspace(value))
+		{
 			input_index++;
 			continue;
 		}
-		else if (isdigit(value)) {
 
-			while(isdigit(input[input_index]) && buffer_index != MAX_NUM_LENGTH) {
+		else if (isdigit(value))
+		{
+			while(isdigit(input[input_index]) && buffer_index != MAX_NUM_LENGTH)
+			{
 				buffer[buffer_index] = input[input_index];
 				input_index++;
 				buffer_index++;
 			}
 
+			input_index--;
 			buffer[buffer_index] = '\0';
 
-			if (isalnum(input[input_index])) {
-				if(isdigit(input[input_index])) {
+			if (isalnum(input[input_index + 1]))
+			{
+				if(isdigit(input[input_index + 1]))
+				{
 					list[lex_index].type = -1;
 					list[lex_index].error_type = ERR_NUM_LENGTH;
 				}
-				else if (isalpha(input[input_index])) {
+
+				else if (isalpha(input[input_index + 1]))
+				{
 					list[lex_index].type = -1;
 					list[lex_index].error_type = ERR_INVALID_IDENT;
 				}
-				while(isalnum(input_index)) {
+
+				while(isalnum(input[input_index]))
+				{
 					input_index++;
 				}
+
+				// Must decrement index here as the loop will increment it after we exit
+				input_index--;
 			}
-			else {
+
+			else
+			{
 				char *digitString = (char*)malloc(sizeof(char) * buffer_index + 1);
 				strcpy(digitString, buffer);
 
@@ -71,47 +93,61 @@ lexeme *lex_analyze(int list_flag, char *input)
 				free(digitString);
 			}
 		}
-		else if (isalpha(value)) {
-			
-			while(isalnum(input[input_index]) && buffer_index != MAX_IDENT_LENGTH) {
+	
+		else if (isalpha(value))
+		{
+			while(isalnum(input[input_index]) && buffer_index != MAX_IDENT_LENGTH - 1)
+			{
 				buffer[buffer_index] = input[input_index];
 				input_index++;
 				buffer_index++;
 			}
 
+			// Undo index change when loop breaks
+			input_index--;
+
 			buffer[buffer_index] = '\0';
 
-			if (isalnum(input_index)) {
+			// Checks if next char is alnum
+			if (isalnum(input[input_index + 1]))
+			{
+
 				list[lex_index].type = -1;
 				list[lex_index].error_type = ERR_IDENT_LENGTH;
-				while(isalnum(input_index)) {
+
+				// This loop will change the index until it reaches a new line
+				while(isalnum(input[input_index]))
 					input_index++;
-				}
+
+				// Must decrement index here as the loop will increment it after
+				input_index--;
 			}
-			else {
-				char *str = (char*)malloc(sizeof(char) * buffer_index + 1);
-				strcpy(str, buffer);
 
-				int keyword = keyword_check(str);
+			else
+			{
+				int keyword = keyword_check(buffer);
 
-				if (keyword == identifier) {
+				if (keyword == identifier)
+				{
 					list[lex_index].type = identifier;
-					list[lex_index].identifier_name = str;
+					strcpy(list[lex_index].identifier_name, buffer);
 				}
-				else if (keyword != -1) {
+				else if (keyword != -1)
+				{
 					list[lex_index].type = keyword;
 				}
-				else {
+				else
+				{
 					list[lex_index].type = -1;
 					list[lex_index].error_type = ERR_INVALID_IDENT_NAME;
+					error_flag = 1;
 				}
-
-				free(str);
 			}
-
 		}
-		else {
-			switch (value) {
+		else
+		{
+			switch (value)
+			{
 				case '.':
 					list[lex_index].type = period;
 					break;
@@ -143,11 +179,14 @@ lexeme *lex_analyze(int list_flag, char *input)
 					list[lex_index].type = right_parenthesis;
 					break;
 				case ':':
-					if (input[input_index + 1] == '=') {
+					if (input[input_index + 1] == '=')
+					{
 						list[lex_index].type = assignment_symbol;
 						input_index++;
+
 					}
-					else {
+					else
+					{
 						//error handle; ERR_INVALID_SYMBOL
 						list[lex_index].type = -1;
 						list[lex_index].error_type = ERR_INVALID_SYMBOL;
@@ -155,11 +194,14 @@ lexeme *lex_analyze(int list_flag, char *input)
 					}
 					break;
 				case '=':
-					if (input[input_index + 1] == '=') {
+					if (input[input_index + 1] == '=')
+					{
 						list[lex_index].type = equal_to;
 						input_index++;
+
 					}
-					else {
+					else
+					{
 						//error handle; ERR_INVALID_SYMBOL
 						list[lex_index].type = -1;
 						list[lex_index].error_type = ERR_INVALID_SYMBOL;
@@ -167,30 +209,33 @@ lexeme *lex_analyze(int list_flag, char *input)
 					}
 					break;
 				case '<':
-					if (input[input_index + 1] == '=') {
+					if (input[input_index + 1] == '=')
+					{
 						list[lex_index].type = less_than_or_equal_to;
 						input_index++;
+
 					}
-					else {
+					else
 						list[lex_index].type = less_than;
-					}
 					break;
 				case '>':
-					if (input[input_index + 1] == '=') {
+					if (input[input_index + 1] == '=')
+					{
 						list[lex_index].type = greater_than_or_equal_to;
 						input_index++;
 					}
-					else {
+					else 
 						list[lex_index].type = greater_than;
-					}
 					break;
 				case '!':
-					if (input[input_index + 1] == '=') {
+					if (input[input_index + 1] == '=')
+					{
 						list[lex_index].type = not_equal_to;
 						input_index++;
 					}
-					else {
-						//error handle; ERR_INVALID_SYMBOL
+					else
+					{
+						// error handle; ERR_INVALID_SYMBOL
 						list[lex_index].type = -1;
 						list[lex_index].error_type = ERR_INVALID_SYMBOL;
 						error_flag = 1;
@@ -198,26 +243,45 @@ lexeme *lex_analyze(int list_flag, char *input)
 					break;
 				case '?':
 					// skip comments code here
-					while (input[input_index + 1] != '\n' || input[input_index + 1] != '\0') {
+					while (input[input_index + 1] != '\n' && input[input_index + 1] != '\0')
+					{
 						input_index++;
 					}
+
+					// Skips newline char
+					if (input[input_index + 1] == '\n')
+						input_index++;
+
+					// Removes this index from lexical analyzer since it is a comment
+					lex_index--;
 					break;
 				default:
 					list[lex_index].error_type = ERR_INVALID_SYMBOL;
+					list[lex_index].type = -1;
 					error_flag = 1;
 			}
 		}
-
 		input_index++;
 		lex_index++;
-		buffer_index++;
 	}
 
-	if (list_flag) {
+	// Conditionals return NULL or list depending on errors
+	if (list_flag && !error_flag)
+	{
 		print_lexeme_list(list, lex_index);
+		return list;
 	}
 
-	return list;
+	else if (list_flag && error_flag)
+	{
+		print_lexeme_list(list, lex_index);
+		return NULL;
+	}
+
+	else if (!list_flag && !error_flag)
+		return list;
+	else
+		return NULL;
 }
 
 int keyword_check(char buffer[])
