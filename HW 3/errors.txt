@@ -1,0 +1,20 @@
+procedure a;
+const a  3 const := ;
+var ; var a
+procedure a procedure ;
+var b; const c := -1; procedure d;
+begin
+	call a;
+	z  z; c := d; d := (1;
+	call z; call b; call c; call ;
+	if 3 3 ;
+	while 4 > 8 ;
+	read ; read z; read c; read d;
+	write ;
+	def {}; def z {}; def b {; def c };
+	def d {};
+	def d {
+		begin
+			def d{}
+	};
+end

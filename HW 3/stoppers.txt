@@ -1,0 +1,26 @@
+? bc the errors stop you have to fix them to see the next
+? replace * or var w/ the missing token
+const * := 2; ? 2-1
+const b * 2; ? 4-1
+const c := *; ? 5
+const d := 2 * ? 6-1
+var *; ? 2-2
+var e * ? 6-2
+procedure *; ? 2-3
+procedure f * ? 6-3
+procedure g;
+begin
+	e * 3; ? 4-2
+	call *; ? 2-4
+	begin * end; ? 10
+	write 3 ? 6-4
+	write (3 var; ? 19
+	if 4>8 var; ? 11
+	while 4>8 var; ? 12
+	read *; ? 2-5
+	def *{}; ? 2-6
+	def f*}; ? 15
+	def g{*; ? 16
+	if 4 var 8 then; ? 17
+	write var; ? 20
+end.

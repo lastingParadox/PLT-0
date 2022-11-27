@@ -1,0 +1,41 @@
+Parser Error 3: identifier is declared multiple times by a procedure
+Parser Error 4: missing := in constant declaration
+Parser Error 6: missing ; after constant declaration
+Parser Error 2: missing identifier after keyword const
+Parser Error 5: missing number in constant declaration
+Parser Error 2: missing identifier after keyword var
+Parser Error 3: identifier is declared multiple times by a procedure
+Parser Error 6: missing ; after variable declaration
+Parser Error 3: identifier is declared multiple times by a procedure
+Parser Error 6: missing ; after procedure declaration
+Parser Error 2: missing identifier after keyword procedure
+Parser Error 8: undeclared identifier used in assignment statement
+Parser Error 4: missing := in assignment statement
+Parser Error 8: undeclared identifier used in arithmetic expression
+Parser Error 7: procedures and constants cannot be assigned to
+Parser Error 18: procedures cannot be used in arithmetic
+Parser Error 7: procedures and constants cannot be assigned to
+Parser Error 19: ( must be followed by )
+Parser Error 8: undeclared identifier used in call statement
+Parser Error 9: variables and constants cannot be called
+Parser Error 9: variables and constants cannot be called
+Parser Error 2: missing identifier after keyword call
+Parser Error 17: missing relational operator
+Parser Error 11: if must be followed by then
+Parser Error 12: while must be followed by do
+Parser Error 2: missing identifier after keyword read
+Parser Error 8: undeclared identifier used in read statement
+Parser Error 13: procedures and constants cannot be read
+Parser Error 13: procedures and constants cannot be read
+Parser Error 20: invalid expression
+Parser Error 2: missing identifier after keyword def
+Parser Error 8: undeclared identifier used in define statement
+Parser Error 14: variables and constants cannot be defined
+Parser Error 16: { must be followed by }
+Parser Error 14: variables and constants cannot be defined
+Parser Error 15: missing {
+Parser Error 23: procedures cannot be defined multiple times
+Parser Error 22: procedures can only be defined within the procedure that declares them
+Parser Error 10: begin must be followed by end
+Parser Error 1: missing . 
+Parser Error 21: procedure being called has not been defined

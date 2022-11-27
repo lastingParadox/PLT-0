@@ -1,0 +1,32 @@
+var a; const b:=3; procedure c; var d; procedure e; const f:=-1;
+begin
+	read a;
+	d:=a+b*f-(4/2);
+	if a==d then write 3;
+	if a+2!=d then write 3+1;
+	if a<d*(3+8) then write 3-2;
+	if a-1<=d+4 then write 3*4/6;
+	while 3>7 do write 3*(a+d);
+	if a>=d then
+		begin
+			call e;
+			return
+		end;
+	def e{
+		var b; const a:=4;
+		begin
+			b:=a+b;
+			a:=b-3;
+			call c;
+			return;
+		end};
+	def c{
+		procedure a; procedure f;
+		begin
+			def a{};
+			return;
+			call a;
+			def f{call f}
+		end};
+	return;
+end.
