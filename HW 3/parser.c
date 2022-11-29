@@ -42,13 +42,14 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 	table = calloc(ARRAY_SIZE, sizeof(symbol));
 
 	code = calloc(ARRAY_SIZE, sizeof(instruction));
-	// your code here
 
 	// PROGRAM
 	level = -1;
 	block_function();
+
+	// Checks for stopping errors
 	if (error == -1)
-		return;
+		return NULL;
 
 	// Check for Error 1
 	if(tokens[token_index].type != period) {
@@ -93,7 +94,7 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 		return code;
 	}
 
-	return;
+	return NULL;
 }
 
 // BLOCK
@@ -348,12 +349,17 @@ void proc_function() {
 
 // STATEMENT
 void statement_function() {
+	// Declare variables outside of switch
+	int l;
+	int m;
+	int symbol_index;
+	int jump_index;
+	int follow;
+	int first_instruction;
+	int save_flag;
 	switch(tokens[token_index].type) {
 		case identifier:
-			int l;
-			int m;
-
-			int symbol_index = find_symbol(tokens[token_index].identifier_name, 2);
+			symbol_index = find_symbol(tokens[token_index].identifier_name, 2);
 
 			// Check for Error 8-1 and Error 7
 			if (symbol_index == -1) {
@@ -397,9 +403,6 @@ void statement_function() {
 
 			break;
 		case keyword_call:
-			int l;
-			int m;
-
 			// ident
 			token_index++;
 			// Check for Error 2-4
@@ -417,7 +420,7 @@ void statement_function() {
 				m = -1;
 			}
 			else {
-				int symbol_index = find_symbol(tokens[token_index].identifier_name, 3);
+				symbol_index = find_symbol(tokens[token_index].identifier_name, 3);
 
 				// Check for Error 8-2 and Error 9
 				if (symbol_index == -1) {
@@ -453,8 +456,10 @@ void statement_function() {
 
 			// end
 			// Check for Error 6-4 and Error 10
+
+			// -- SOMETHING IS GOING WRONG FROM HERE --
 			if (tokens[token_index].type != keyword_end) {
-				int follow = tokens[token_index].type;
+				follow = tokens[token_index].type;
 				// Error 6-4
 				if (follow == identifier || follow == keyword_call || follow == keyword_begin || follow == keyword_if ||
 					follow == keyword_while || follow == keyword_read || follow == keyword_write || follow == keyword_def ||
@@ -476,7 +481,7 @@ void statement_function() {
 					error = 1;
 				}
 			}
-
+			//	-- TO HERE --
 			break;
 		case keyword_if:
 
@@ -484,7 +489,7 @@ void statement_function() {
 			if (error == -1)
 				return;
 
-			int jump_index = code_index;
+			jump_index = code_index;
 
 			emit(JPC, 0, 0);
 
@@ -494,7 +499,7 @@ void statement_function() {
 			if (tokens[token_index].type != keyword_then) {
 				print_parser_error(11, 0);
 
-				int follow = tokens[token_index].type;
+				follow = tokens[token_index].type;
 
 				// If the token is not in the follow set, stopping error.
 				if (follow != period && follow != right_curly_brace && follow != semicolon && follow != keyword_end &&
@@ -517,11 +522,11 @@ void statement_function() {
 			break;
 		case keyword_while:
 
-			int first_instruction = code_index;
+			first_instruction = code_index;
 
 			condition_function();
 
-			int jump_index = code_index;
+			jump_index = code_index;
 
 			emit(JPC, 0, 0);
 
@@ -531,7 +536,7 @@ void statement_function() {
 			if (tokens[token_index].type != keyword_do) {
 				print_parser_error(12, 0);
 
-				int follow = tokens[token_index].type;
+				follow = tokens[token_index].type;
 
 				// If the token is not in the follow set, stopping error.
 				if (follow != period && follow != right_curly_brace && follow != semicolon && follow != keyword_end &&
@@ -555,8 +560,6 @@ void statement_function() {
 
 			break;
 		case keyword_read:
-			int l;
-			int m;
 
 			// ident
 			token_index++;
@@ -576,7 +579,7 @@ void statement_function() {
 				m = -1;
 			}
 			else {
-				int symbol_index = find_symbol(tokens[token_index].identifier_name, 2);
+				symbol_index = find_symbol(tokens[token_index].identifier_name, 2);
 
 				// Check for Error 8-3 and 13
 				if (symbol_index == -1) {
@@ -611,7 +614,7 @@ void statement_function() {
 
 			break;
 		case keyword_def:
-			int save_flag = 1;
+			save_flag = 1;
 			int symbol_index;
 
 			// ident
@@ -723,7 +726,6 @@ void statement_function() {
 		default:
 			return;
 	}
-
 	// Starting to doubt if I should do this
 	// I mean, it makes sense to me
 	token_index++;
