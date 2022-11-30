@@ -37,17 +37,27 @@ void factor_function();
 
 instruction *parse(int code_flag, int table_flag, lexeme *list)
 {
-	tokens = list;
+  
 
+	tokens = list;
+  
+  
+  
 	table = calloc(ARRAY_SIZE, sizeof(symbol));
+
+  
 
 	code = calloc(ARRAY_SIZE, sizeof(instruction));
 
 	// PROGRAM
 	level = -1;
+ 
+  
 	block_function();
-
+  
+  
 	// Checks for stopping errors
+  
 	if (error == -1)
 		return NULL;
 
@@ -90,22 +100,24 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 			print_assembly_code();
 		if (table_flag)
 			print_symbol_table();
-
 		return code;
 	}
-
 	return NULL;
 }
 
 // BLOCK
 void block_function() {
 	level++;
+  
 
 	declarations_function();
+  
 	if (error == -1)
 		return;
-
+  
+  
 	statement_function();
+ 
 	if (error == -1)
 		return;
 
@@ -120,7 +132,7 @@ void declarations_function() {
 
 	while(tokens[token_index].type == keyword_const || tokens[token_index].type == keyword_var || tokens[token_index].type == keyword_procedure) {
 		if (tokens[token_index].type == keyword_const) {
-			const_function();
+      			const_function();
 		}
 		else if (tokens[token_index].type == keyword_var) {
 			var_function(variables);
@@ -349,6 +361,7 @@ void proc_function() {
 
 // STATEMENT
 void statement_function() {
+  
 	// Declare variables outside of switch
 	int l;
 	int m;
@@ -357,9 +370,11 @@ void statement_function() {
 	int follow;
 	int first_instruction;
 	int save_flag;
+ 
 	switch(tokens[token_index].type) {
 		case identifier:
-			symbol_index = find_symbol(tokens[token_index].identifier_name, 2);
+			
+      symbol_index = find_symbol(tokens[token_index].identifier_name, 2);
 
 			// Check for Error 8-1 and Error 7
 			if (symbol_index == -1) {
@@ -384,7 +399,7 @@ void statement_function() {
 			// Check for Error 4-2
 			if (tokens[token_index].type != assignment_symbol) {
 				print_parser_error(4, 2);
-
+      
 				// If the token is not an identifier, number, or '(', stopping error.
 				if (tokens[token_index].type != identifier && tokens[token_index].type != number &&
 					tokens[token_index].type != left_parenthesis) {
@@ -394,13 +409,15 @@ void statement_function() {
 
 				error = 1;
 			}
-
-			expression_function();
-			if (error == -1)
-				return;
-
-			emit(STO, l, m);
-
+         expression_function();
+        
+        
+        
+  			if (error == -1)
+  				return;
+  
+  			emit(STO, l, m);
+      return;
 			break;
 		case keyword_call:
 			// ident
@@ -445,21 +462,24 @@ void statement_function() {
 
 			break;
 		case keyword_begin:
-
+      
 			do {
 				token_index++;
+        
 				statement_function();
+        
 				if (error == -1)
 					return;
 
 			} while(tokens[token_index].type == semicolon);
-
+      
 			// end
 			// Check for Error 6-4 and Error 10
 
 			// -- SOMETHING IS GOING WRONG FROM HERE --
 			if (tokens[token_index].type != keyword_end) {
 				follow = tokens[token_index].type;
+        
 				// Error 6-4
 				if (follow == identifier || follow == keyword_call || follow == keyword_begin || follow == keyword_if ||
 					follow == keyword_while || follow == keyword_read || follow == keyword_write || follow == keyword_def ||
@@ -470,6 +490,7 @@ void statement_function() {
 				}
 				// Error 10
 				else {
+          
 					print_parser_error(10, 0);
 
 					// If the token is not a '.', '}', or a ';', stopping error.
@@ -733,7 +754,7 @@ void statement_function() {
 
 // CONDITION
 void condition_function() {
-
+  
 	expression_function();
 	if (error == -1) {
 		return;
@@ -787,27 +808,35 @@ void condition_function() {
 
 // EXPRESSION
 void expression_function() {
-
-	term_function();
-	if (error == -1) {
-		return;
-	}
-
-	// + or -
-	while(tokens[token_index].type == plus || tokens[token_index].type == minus) {
-
-		term_function();
-		if (error == -1) {
-			return;
-		}
-
-		if (tokens[token_index].type == plus)
-			emit(ADD, 0, 0);
-		else
-			emit(SUB, 0, 0);
-		
-		token_index++;
-	}
+        
+  	term_function();
+   
+  	if (error == -1) {
+  		return;
+  	}
+  
+  	// + or -
+    
+    
+  	while(tokens[token_index].type == plus || tokens[token_index].type == minus) {
+  
+  		term_function();
+  		if (error == -1) {
+  			return;
+  		}
+    
+      
+      
+  		if (tokens[token_index].type == plus)
+  			emit(ADD, 0, 0);
+  		else if (tokens[token_index].type == minus)
+  			emit(SUB, 0, 0);
+  		
+  		//token_index++;
+      
+  	}
+ 
+ 
 }
 
 // TERM
@@ -817,24 +846,27 @@ void term_function() {
 	if (error == -1) {
 		return;
 	}
-
+  
 	// * or /
 	token_index++;
-
+    
 		while(tokens[token_index].type == times || tokens[token_index].type == division) {
-
-		term_function();
+    
+		factor_function();
 		if (error == -1) {
 			return;
 		}
 
+   
 		if (tokens[token_index].type == times)
 			emit(MUL, 0, 0);
-		else
+		else if(tokens[token_index].type == division)
 			emit(DIV, 0, 0);
 		
 		token_index++;
+    
 	}
+ 
 }
 
 // FACTOR
@@ -842,6 +874,7 @@ void factor_function() {
 	
 	// ident
 	token_index++;
+  
 
 	// This looks disgusting, but I'm trying to rush this out at this point
 	// Check for Error 20
@@ -857,7 +890,7 @@ void factor_function() {
 					follow != semicolon && follow != keyword_end && follow != equal_to && follow != not_equal_to && follow != less_than &&
 					follow != less_than_or_equal_to && follow != greater_than && follow != greater_than_or_equal_to && follow != keyword_then &&
 					follow != keyword_do) {
-						error = -1;
+						error = -1;        
 						return;
 					}
 				
@@ -866,9 +899,7 @@ void factor_function() {
 			else {
 				
 				// Expression
-				token_index++;
-
-				expression_function();
+       				expression_function();
 				if (error == -1)
 					return;
 				
@@ -893,6 +924,8 @@ void factor_function() {
 		}
 		else {
 			emit(LIT, 0, tokens[token_index].number_value);
+      //token_index++;
+   
 		}
 	}
 	else {
