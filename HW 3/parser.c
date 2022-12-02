@@ -47,10 +47,8 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 	code = calloc(ARRAY_SIZE, sizeof(instruction));
 
 	// PROGRAM
-    printf("%s\n", "PROGRAM");
 	level = -1;
  
-    printf("%s\n",token_type_string(tokens[token_index].type));
 	block_function();
   
 	// Checks for stopping errors
@@ -85,7 +83,7 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 	}
 
 	// If HLT instruction is implicit, add HLT to code array.
-	if (code[code_index - 1].op != HLT) {
+	if (code[code_index - 1].op != SYS && code[code_index - 1].m != HLT) {
 		emit(SYS, 0, HLT);
 	}
 
@@ -103,7 +101,6 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 
 // BLOCK
 void block_function() {
-    printf("%s\n", "BLOCK");
 	level++;
   
 	declarations_function();
@@ -121,7 +118,6 @@ void block_function() {
 
 // DECLARATIONS
 void declarations_function() {
-    printf("%s\n", "DECLARATIONS");
 	int variables = 0;
 
 	while(tokens[token_index].type == keyword_const || tokens[token_index].type == keyword_var || tokens[token_index].type == keyword_procedure) {
@@ -145,7 +141,6 @@ void declarations_function() {
 
 // CONST
 void const_function() {
-    printf("%s\n", "CONST");
 
     int value;
     char* name;
@@ -257,7 +252,6 @@ void const_function() {
 
 // VAR
 void var_function(int var_amount) {
-    printf("%s\n", "VAR");
     
     char* name;
 
@@ -316,7 +310,6 @@ void var_function(int var_amount) {
 
 // PROCEDURE
 void proc_function() {
-    printf("%s\n", "PROC");
 
     char* name;
 
@@ -375,7 +368,6 @@ void proc_function() {
 
 // STATEMENT
 void statement_function() {
-    printf("%s\n", "STATEMENT");
 	// Declare variables outside of switch
 	int l;
 	int m;
@@ -802,7 +794,6 @@ void statement_function() {
 
 // CONDITION
 void condition_function() {
-    printf("%s\n", "CONDITION");
 
 	expression_function();
 	if (error == -1) {
@@ -860,7 +851,6 @@ void condition_function() {
 
 // EXPRESSION
 void expression_function() {
-    printf("%s\n", "EXPRESSION");
 
   	term_function();
   	if (error == -1) {
@@ -889,7 +879,6 @@ void expression_function() {
 
 // TERM
 void term_function() {
-    printf("%s\n", "TERM");
 
 	factor_function();
 	if (error == -1) {
@@ -918,7 +907,6 @@ void term_function() {
 
 // FACTOR
 void factor_function() {
-	printf("%s\n", "FACTOR");
 	// ident, number, ( EXPRESSION )
 
     if (tokens[token_index].type == identifier) {
@@ -939,14 +927,14 @@ void factor_function() {
 			}
 		}
 		else if (constant_index != -1 && var_index == -1) {
-			emit(LIT, 0, table[constant_index].address);
+			emit(LIT, 0, table[constant_index].value);
 		}
 		else if (constant_index == -1 && var_index != -1) {
 			emit(LOD, level - table[var_index].level, table[var_index].address);
 		}
 		else {
 			if (table[constant_index].level > table[var_index].level) {
-				emit(LIT, 0, table[constant_index].address);
+				emit(LIT, 0, table[constant_index].value);
 			}
 			else {
 				emit(LOD, level - table[var_index].level, table[var_index].address);
@@ -1017,7 +1005,7 @@ void factor_function() {
 // Debug Function
 void token_increment() {
     token_index++;
-    printf("%s Increment\n", token_type_string(tokens[token_index].type));
+    //printf("%s Increment\n", token_type_string(tokens[token_index].type));
 }
 
 char* token_type_string(int type) {
