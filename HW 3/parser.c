@@ -37,7 +37,6 @@ void factor_function();
 
 // DEBUG
 void token_increment();
-void token_decrement();
 char* token_type_string(int type);
 
 instruction *parse(int code_flag, int table_flag, lexeme *list)
@@ -63,8 +62,6 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 		error = 1;
 		print_parser_error(1, 0);
 	}
-    // pass over .
-    token_increment();
 
 	// Loop for CAL instructions
 	for (int i = 0; i < code_index; i++) {
@@ -89,7 +86,7 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 
 	// If HLT instruction is implicit, add HLT to code array.
 	if (code[code_index - 1].op != HLT) {
-		emit(HLT, 0, 0);
+		emit(SYS, 0, HLT);
 	}
 
 	// PROGRAM END
@@ -112,8 +109,6 @@ void block_function() {
 	declarations_function();
 	if (error == -1)
 		return;
-    
-    token_increment();
 
 	statement_function();
 	if (error == -1)
@@ -143,13 +138,7 @@ void declarations_function() {
 
 		if (error == -1)
 			return;
-
-		table_index++;
-		token_increment();
 	}
-
-    // Block increases token already
-    token_decrement();
 
 	emit(INC, 0, variables + 3);
 }
@@ -157,13 +146,12 @@ void declarations_function() {
 // CONST
 void const_function() {
     printf("%s\n", "CONST");
-	table[table_index].kind = 1;
-	table[table_index].level = level;
-	table[table_index].address = 0;
 
+    int value;
+    char* name;
 	int mult_flag = 1;
 
-	// ident
+	// const -> ident
 	token_increment();
 	// Check for Error 2-1
 	if (tokens[token_index].type != identifier) {
@@ -175,20 +163,21 @@ void const_function() {
 			return;
 		}
 		error = 1;
-		strcpy(table[table_index].name, "null");
+		name = "null";
 	}
 	else {
-		strcpy(table[table_index].name, tokens[token_index].identifier_name);
+        name = tokens[token_index].identifier_name;
 
 		// Check for Error 3
-		if (multiple_declaration_check(table[table_index].name) != -1) {
+		if (multiple_declaration_check(tokens[token_index].identifier_name) != -1) {
 			error = 1;
 			print_parser_error(3, 0);
 		}
+
+        // ident -> :=
+	    token_increment();
 	}
 
-	// :=
-	token_increment();
 	// Check for Error 4-1
 	if (tokens[token_index].type != assignment_symbol) {
 		print_parser_error(4, 1);
@@ -209,12 +198,14 @@ void const_function() {
 
 		error = 1;
 	}
+    else {
+        // := -> - | number
+	    token_increment();
+    }
 
-	// Optional "-" and number
-	token_increment();
 	if (tokens[token_index].type == minus) {
 		mult_flag = -1;
-        // number
+        // - -> number
 		token_increment();
 	}
 
@@ -229,14 +220,17 @@ void const_function() {
 		}
 
 		error = 1;
-		table[table_index].value = 0;
+		value = 0;
 	}
 	else {
-		table[table_index].value = mult_flag * tokens[token_index].number_value;
+		value = mult_flag * tokens[token_index].number_value;
+
+        // number -> ;
+	    token_increment();
 	}
 
-	// ;
-	token_increment();
+    add_symbol(1, name, value, level, 0);
+
 	// Checking for Error 6-1
 	if (tokens[token_index].type != semicolon) {
 		print_parser_error(6, 1);
@@ -255,17 +249,19 @@ void const_function() {
 
 		error = 1;
 	}
+    else {
+        // pass over ;
+        token_increment();
+    }
 }
 
 // VAR
 void var_function(int var_amount) {
     printf("%s\n", "VAR");
-	table[table_index].kind = 2;
-	table[table_index].level = level;
-	table[table_index].value = 0;
-	table[table_index].address = var_amount + 3;
+    
+    char* name;
 
-	// ident
+	// var -> ident
 	token_increment();
 	// Check for Error 2-2
 	if (tokens[token_index].type != identifier) {
@@ -277,20 +273,23 @@ void var_function(int var_amount) {
 			return;
 		}
 		error = 1;
-		strcpy(table[table_index].name, "null");
+		name = "null";
 	}
 	else {
-		strcpy(table[table_index].name, tokens[token_index].identifier_name);
+		name = tokens[token_index].identifier_name;
 
 		// Check for Error 3
-		if (multiple_declaration_check(table[table_index].name) != -1) {
+		if (multiple_declaration_check(tokens[token_index].identifier_name) != -1) {
 			error = 1;
 			print_parser_error(3, 0);
 		}
+
+        // ident -> ;
+	    token_increment();
 	}
 
-	// ;
-	token_increment();
+    add_symbol(2, name, 0, level, var_amount + 3);
+
 	// Checking for Error 6-2
 	if (tokens[token_index].type != semicolon) {
 		print_parser_error(6, 2);
@@ -309,17 +308,19 @@ void var_function(int var_amount) {
 
 		error = 1;
 	}
+    else {
+        // pass over ;
+        token_increment();
+    }
 }
 
 // PROCEDURE
 void proc_function() {
     printf("%s\n", "PROC");
-	table[table_index].kind = 3;
-	table[table_index].level = level;
-	table[table_index].value = 0;
-	table[table_index].address = -1;
 
-	// ident
+    char* name;
+
+	// procedure -> ident
 	token_increment();
 	// Check for Error 2-3
 	if (tokens[token_index].type != identifier) {
@@ -331,20 +332,23 @@ void proc_function() {
 			return;
 		}
 		error = 1;
-		strcpy(table[table_index].name, "null");
+		name = "null";
 	}
 	else {
-		strcpy(table[table_index].name, tokens[token_index].identifier_name);
+        name = tokens[token_index].identifier_name;
 
 		// Check for Error 3
-		if (multiple_declaration_check(table[table_index].name) != -1) {
+		if (multiple_declaration_check(tokens[token_index].identifier_name) != -1) {
 			error = 1;
 			print_parser_error(3, 0);
 		}
+
+	    // ident -> ;
+	    token_increment();
 	}
 
-	// ;
-	token_increment();
+    add_symbol(3, name, 0, level, -1);
+
 	// Checking for Error 6-3
 	if (tokens[token_index].type != semicolon) {
 		print_parser_error(6, 3);
@@ -363,6 +367,10 @@ void proc_function() {
 
 		error = 1;
 	}
+    else {
+        // pass over ;
+        token_increment();
+    }
 }
 
 // STATEMENT
@@ -376,6 +384,7 @@ void statement_function() {
 	int follow;
 	int first_instruction;
 	int save_flag;
+
 	switch(tokens[token_index].type) {
 		case identifier:
 			
@@ -414,12 +423,12 @@ void statement_function() {
 
 				error = 1;
 			}
-            
-            // := -> expression
-            token_increment();
+            else {
+                // := -> expression
+                token_increment();
+            }
 
          	expression_function();
-        
   			if (error == -1)
   				return;
   
@@ -485,10 +494,7 @@ void statement_function() {
 
 			} while(tokens[token_index].type == semicolon);
       
-      
-			// end
 			// Check for Error 6-4 and Error 10
-
 			if (tokens[token_index].type != keyword_end) {
 				follow = tokens[token_index].type;
 				// Error 6-4
@@ -512,11 +518,13 @@ void statement_function() {
 					error = 1;
 				}
 			}
-
-            // pass over end
-            token_increment();
+            else {
+                // pass over end
+                token_increment();
+            }
 
 			break;
+
 		case keyword_if:
 
             // if -> condition
@@ -547,9 +555,10 @@ void statement_function() {
 
 				error = 1;
 			}
-      
-            // then -> statement
-            token_increment();
+            else {
+                // then -> statement
+                token_increment();
+            }
 
 			statement_function();
 			if (error == -1)
@@ -558,6 +567,7 @@ void statement_function() {
 			code[jump_index].m = code_index;
 
 			break;
+
 		case keyword_while:
 
 			first_instruction = code_index;
@@ -566,6 +576,8 @@ void statement_function() {
             token_increment();
 
 			condition_function();
+            if (error == -1)
+                return;
 
 			jump_index = code_index;
 
@@ -588,9 +600,10 @@ void statement_function() {
 
 				error = 1;
 			}
-      
-            // do -> statement
-            token_increment();
+            else {
+                // do -> statement
+                token_increment();
+            }
 
 			statement_function();
 			if (error == -1)
@@ -601,6 +614,7 @@ void statement_function() {
 			code[jump_index].m = code_index;
 
 			break;
+
 		case keyword_read:
 
 			// read -> ident
@@ -645,10 +659,11 @@ void statement_function() {
                 token_increment();
 			}
 
-			emit(RED, 0, 0);
+			emit(SYS, 0, RED);
 			emit(STO, l, m);
 			
 			break;
+
 		case keyword_write:
 
             // write -> expression
@@ -658,14 +673,16 @@ void statement_function() {
 			if (error == -1)
 				return;
 			
-			emit(WRT, 0, 0);
+			emit(SYS, 0, WRT);
 			break;
+
 		case keyword_def:
 			save_flag = 1;
 			int symbol_index;
 
 			// def -> ident
 			token_increment();
+
 			// Check for 2-6
 			if (tokens[token_index].type != identifier) {
 				print_parser_error(2, 6);
@@ -725,19 +742,16 @@ void statement_function() {
 
 				error = 1;
 			}
+            else {
+                // { -> block
+                token_increment();
+            }
 
 			int jump_index = code_index;
 
 			emit(JMP, 0, 0);
 
-            // { -> block
-            token_increment();
-
 			block_function();
-      
-      		if(tokens[token_index].type == right_curly_brace)
-        		token_index--;
-        
 			if (error == -1)
 				return;
 
@@ -763,19 +777,24 @@ void statement_function() {
 
 				error = 1;
 			}
+            else {
+                // pass over }
+                token_increment();
+            }
 
 			break;
+
 		case keyword_return:
             // pass over return
             token_increment();
 
 			if (level == 0)
-				emit(HLT, 0, 0);
+				emit(SYS, 0, HLT);
 			else
 				emit(RTN, 0, 0);
-        token_index++;
-      return;
+            
 			break;
+
 		default:
             return;
 	}
@@ -786,7 +805,6 @@ void condition_function() {
     printf("%s\n", "CONDITION");
 
 	expression_function();
-
 	if (error == -1) {
 		return;
 	}
@@ -806,9 +824,10 @@ void condition_function() {
 
 		error = 1;
 	}
-
-    // operator -> expression
-    token_increment();
+    else {
+        // operator -> expression
+        token_increment();
+    }
 
 	expression_function();
 	if (error == -1) {
@@ -817,22 +836,22 @@ void condition_function() {
 
 	switch(type) {
 			case equal_to:
-				emit(EQL, 0, 0);
+				emit(OPR, 0, EQL);
 				break;
 			case not_equal_to:
-				emit(NEQ, 0, 0);
+				emit(OPR, 0, NEQ);
 				break;
 			case less_than:
-				emit(LSS, 0, 0);
+				emit(OPR, 0, LSS);
 				break;
 			case less_than_or_equal_to:
-				emit(LEQ, 0, 0);
+				emit(OPR, 0, LEQ);
 				break;
 			case greater_than:
-				emit(GTR, 0, 0);
+				emit(OPR, 0, GTR);
 				break;
 			case greater_than_or_equal_to:
-				emit(GEQ, 0, 0);
+				emit(OPR, 0, GEQ);
 				break;
 			default:
 				emit(OPR, 0 , -1);
@@ -842,8 +861,8 @@ void condition_function() {
 // EXPRESSION
 void expression_function() {
     printf("%s\n", "EXPRESSION");
+
   	term_function();
-   
   	if (error == -1) {
   		return;
   	}
@@ -852,7 +871,7 @@ void expression_function() {
   
         int type = tokens[token_index].type;
 
-        // term
+        // + | - -> term
         token_increment();
 
   		term_function();
@@ -861,9 +880,9 @@ void expression_function() {
   		}
       
   		if (type == plus)
-  			emit(ADD, 0, 0);
+  			emit(OPR, 0, ADD);
   		else if (type == minus)
-  			emit(SUB, 0, 0);
+  			emit(OPR, 0, SUB);
       
   	}
 }
@@ -881,7 +900,7 @@ void term_function() {
     
         int type = tokens[token_index].type;
 
-        // factor
+        // * | / -> factor
         token_increment();
 
 		factor_function();
@@ -890,9 +909,9 @@ void term_function() {
 		}
 
 		if (type == times)
-			emit(MUL, 0, 0);
+			emit(OPR, 0, MUL);
 		else if(type == division)
-			emit(DIV, 0, 0);
+			emit(OPR, 0, DIV);
 
 	}
 }
@@ -971,10 +990,10 @@ void factor_function() {
             
             error = 1;
         }
-
-        // Pass over '}'
-        token_increment();
-
+        else {
+            // Pass over '}'
+            token_increment();
+        }
     }
     // Error 20
     else {
@@ -1000,12 +1019,6 @@ void token_increment() {
     token_index++;
     printf("%s Increment\n", token_type_string(tokens[token_index].type));
 }
-
-void token_decrement() {
-    token_index--;
-    printf("%s Decrement\n", token_type_string(tokens[token_index].type));
-}
-
 
 char* token_type_string(int type) {
     switch (type) {
