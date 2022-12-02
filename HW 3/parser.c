@@ -35,30 +35,26 @@ void expression_function();
 void term_function();
 void factor_function();
 
+// DEBUG
+void token_increment();
+void token_decrement();
+char* token_type_string(int type);
+
 instruction *parse(int code_flag, int table_flag, lexeme *list)
 {
-  	printf("in instruction\n");
 
 	tokens = list;
-  
-  	printf("before table calloc\n");
-  
 	table = calloc(ARRAY_SIZE, sizeof(symbol));
-
-  	printf("before code calloc\n");
-
 	code = calloc(ARRAY_SIZE, sizeof(instruction));
 
 	// PROGRAM
+    printf("%s\n", "PROGRAM");
 	level = -1;
  
-  	printf("in block function\n");
-  	block_function();
-  	token_index++;
-  	printf("leaving block function\n");
+    printf("%s\n",token_type_string(tokens[token_index].type));
+	block_function();
   
 	// Checks for stopping errors
-  	printf("error after block = %d\n", error);
 	if (error == -1)
 		return NULL;
 
@@ -67,6 +63,8 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 		error = 1;
 		print_parser_error(1, 0);
 	}
+    // pass over .
+    token_increment();
 
 	// Loop for CAL instructions
 	for (int i = 0; i < code_index; i++) {
@@ -101,26 +99,23 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 			print_assembly_code();
 		if (table_flag)
 			print_symbol_table();
-    printf("returning code\n");
 		return code;
 	}
-  printf("returning null\n");
 	return NULL;
 }
 
 // BLOCK
 void block_function() {
+    printf("%s\n", "BLOCK");
 	level++;
   
-  	printf("in declarations function\n");
 	declarations_function();
-  	printf("leaving declarations function\n");
 	if (error == -1)
 		return;
-  
-  	printf("in statement function\n");
+    
+    token_increment();
+
 	statement_function();
-  	printf("leaving statement function\n");
 	if (error == -1)
 		return;
 
@@ -131,11 +126,11 @@ void block_function() {
 
 // DECLARATIONS
 void declarations_function() {
+    printf("%s\n", "DECLARATIONS");
 	int variables = 0;
 
 	while(tokens[token_index].type == keyword_const || tokens[token_index].type == keyword_var || tokens[token_index].type == keyword_procedure) {
 		if (tokens[token_index].type == keyword_const) {
-      		printf("in const function %d\n", tokens[token_index].type);
 			const_function();
 		}
 		else if (tokens[token_index].type == keyword_var) {
@@ -150,13 +145,18 @@ void declarations_function() {
 			return;
 
 		table_index++;
-		token_index++;
+		token_increment();
 	}
+
+    // Block increases token already
+    token_decrement();
+
 	emit(INC, 0, variables + 3);
 }
 
 // CONST
 void const_function() {
+    printf("%s\n", "CONST");
 	table[table_index].kind = 1;
 	table[table_index].level = level;
 	table[table_index].address = 0;
@@ -164,7 +164,7 @@ void const_function() {
 	int mult_flag = 1;
 
 	// ident
-	token_index++;
+	token_increment();
 	// Check for Error 2-1
 	if (tokens[token_index].type != identifier) {
 		print_parser_error(2, 1);
@@ -188,7 +188,7 @@ void const_function() {
 	}
 
 	// :=
-	token_index++;
+	token_increment();
 	// Check for Error 4-1
 	if (tokens[token_index].type != assignment_symbol) {
 		print_parser_error(4, 1);
@@ -211,10 +211,11 @@ void const_function() {
 	}
 
 	// Optional "-" and number
-	token_index++;
+	token_increment();
 	if (tokens[token_index].type == minus) {
 		mult_flag = -1;
-		token_index++;
+        // number
+		token_increment();
 	}
 
 	// Checking for Error 5
@@ -233,10 +234,9 @@ void const_function() {
 	else {
 		table[table_index].value = mult_flag * tokens[token_index].number_value;
 	}
-	
 
 	// ;
-	token_index++;
+	token_increment();
 	// Checking for Error 6-1
 	if (tokens[token_index].type != semicolon) {
 		print_parser_error(6, 1);
@@ -259,13 +259,14 @@ void const_function() {
 
 // VAR
 void var_function(int var_amount) {
+    printf("%s\n", "VAR");
 	table[table_index].kind = 2;
 	table[table_index].level = level;
 	table[table_index].value = 0;
 	table[table_index].address = var_amount + 3;
 
 	// ident
-	token_index++;
+	token_increment();
 	// Check for Error 2-2
 	if (tokens[token_index].type != identifier) {
 		print_parser_error(2, 2);
@@ -289,7 +290,7 @@ void var_function(int var_amount) {
 	}
 
 	// ;
-	token_index++;
+	token_increment();
 	// Checking for Error 6-2
 	if (tokens[token_index].type != semicolon) {
 		print_parser_error(6, 2);
@@ -312,13 +313,14 @@ void var_function(int var_amount) {
 
 // PROCEDURE
 void proc_function() {
+    printf("%s\n", "PROC");
 	table[table_index].kind = 3;
 	table[table_index].level = level;
 	table[table_index].value = 0;
 	table[table_index].address = -1;
 
 	// ident
-	token_index++;
+	token_increment();
 	// Check for Error 2-3
 	if (tokens[token_index].type != identifier) {
 		print_parser_error(2, 3);
@@ -342,7 +344,7 @@ void proc_function() {
 	}
 
 	// ;
-	token_index++;
+	token_increment();
 	// Checking for Error 6-3
 	if (tokens[token_index].type != semicolon) {
 		print_parser_error(6, 3);
@@ -365,7 +367,7 @@ void proc_function() {
 
 // STATEMENT
 void statement_function() {
-  printf("statement in  is %d\n", tokens[token_index].type);
+    printf("%s\n", "STATEMENT");
 	// Declare variables outside of switch
 	int l;
 	int m;
@@ -374,14 +376,10 @@ void statement_function() {
 	int follow;
 	int first_instruction;
 	int save_flag;
- 
-  if(tokens[token_index].type == right_curly_brace || tokens[token_index].type == right_parenthesis){
-    return;
- }
 	switch(tokens[token_index].type) {
 		case identifier:
 			
-      symbol_index = find_symbol(tokens[token_index].identifier_name, 2);
+      		symbol_index = find_symbol(tokens[token_index].identifier_name, 2);
 
 			// Check for Error 8-1 and Error 7
 			if (symbol_index == -1) {
@@ -401,8 +399,8 @@ void statement_function() {
 				m = table[symbol_index].address;
 			}
 
-			// :=
-			token_index++;
+			// ident -> :=
+			token_increment();
 			// Check for Error 4-2
 			if (tokens[token_index].type != assignment_symbol) {
 				print_parser_error(4, 2);
@@ -416,19 +414,23 @@ void statement_function() {
 
 				error = 1;
 			}
-         expression_function();
-         
-        
+            
+            // := -> expression
+            token_increment();
+
+         	expression_function();
         
   			if (error == -1)
   				return;
   
   			emit(STO, l, m);
-      return;
+
 			break;
+
 		case keyword_call:
-			// ident
-			token_index++;
+
+			// call -> ident
+			token_increment();
 			// Check for Error 2-4
 			if (tokens[token_index].type != identifier) {
 				print_parser_error(2, 4);
@@ -463,6 +465,9 @@ void statement_function() {
 					l = level - table[symbol_index].level;
 					m = symbol_index;
 				}
+
+                // pass over ident
+                token_increment();
 			}
 	
 			emit(CAL, l, m);
@@ -471,11 +476,10 @@ void statement_function() {
 		case keyword_begin:
    
 			do {
-				
-        		token_index++;
-				statement_function();
-        		printf("statement out is %d\n", tokens[token_index].type);
+                // begin -> statement (first time) ; -> statement (after first time)
+				token_increment();
         
+				statement_function();
 				if (error == -1)
 					return;
 
@@ -485,21 +489,18 @@ void statement_function() {
 			// end
 			// Check for Error 6-4 and Error 10
 
-			// -- SOMETHING IS GOING WRONG FROM HERE --
 			if (tokens[token_index].type != keyword_end) {
 				follow = tokens[token_index].type;
-        		printf("follow = %d %d %d\n", tokens[token_index-1].type, tokens[token_index].type, tokens[token_index+1].type);
 				// Error 6-4
 				if (follow == identifier || follow == keyword_call || follow == keyword_begin || follow == keyword_if ||
 					follow == keyword_while || follow == keyword_read || follow == keyword_write || follow == keyword_def ||
 					follow == keyword_return) {
-						print_parser_error(6, 4);
-						error = -1;
-						return;
+					print_parser_error(6, 4);
+					error = -1;
+					return;
 				}
 				// Error 10
 				else {
-          			printf("follow = %d\n", follow);
 					print_parser_error(10, 0);
 
 					// If the token is not a '.', '}', or a ';', stopping error.
@@ -511,12 +512,15 @@ void statement_function() {
 					error = 1;
 				}
 			}
-			//	-- TO HERE --
-      printf("subprogram succesfully ended %d %d %d\n", tokens[token_index-1].type, tokens[token_index].type, tokens[token_index+1].type);
-      
-      return;
+
+            // pass over end
+            token_increment();
+
 			break;
 		case keyword_if:
+
+            // if -> condition
+            token_increment();
 
 			condition_function();
 			if (error == -1)
@@ -525,8 +529,6 @@ void statement_function() {
 			jump_index = code_index;
 
 			emit(JPC, 0, 0);
-
-			// then
 			
 			// Check for Error 11
 			if (tokens[token_index].type != keyword_then) {
@@ -546,7 +548,9 @@ void statement_function() {
 				error = 1;
 			}
       
-      		token_index++;
+            // then -> statement
+            token_increment();
+
 			statement_function();
 			if (error == -1)
 				return;
@@ -558,14 +562,15 @@ void statement_function() {
 
 			first_instruction = code_index;
 
+            // while -> condition
+            token_increment();
+
 			condition_function();
 
 			jump_index = code_index;
 
 			emit(JPC, 0, 0);
 
-			// do
-			
 			// Check for Error 12
 			if (tokens[token_index].type != keyword_do) {
 				print_parser_error(12, 0);
@@ -584,7 +589,9 @@ void statement_function() {
 				error = 1;
 			}
       
-      		token_index++;
+            // do -> statement
+            token_increment();
+
 			statement_function();
 			if (error == -1)
 				return;
@@ -596,8 +603,8 @@ void statement_function() {
 			break;
 		case keyword_read:
 
-			// ident
-			token_index++;
+			// read -> ident
+			token_increment();
 
 			// Check for 2-5
 			if (tokens[token_index].type != identifier) {
@@ -633,6 +640,9 @@ void statement_function() {
 					l = level - table[symbol_index].level;
 					m = table[symbol_index].address;
 				}
+
+                // pass over ident
+                token_increment();
 			}
 
 			emit(RED, 0, 0);
@@ -641,21 +651,21 @@ void statement_function() {
 			break;
 		case keyword_write:
 
+            // write -> expression
+            token_increment();
+
 			expression_function();
-      		token_index-=1;
 			if (error == -1)
 				return;
 			
 			emit(WRT, 0, 0);
-      		printf("writing %d\n", tokens[token_index+1].type);
-      		return;
 			break;
 		case keyword_def:
 			save_flag = 1;
 			int symbol_index;
 
-			// ident
-			token_index++;
+			// def -> ident
+			token_increment();
 			// Check for 2-6
 			if (tokens[token_index].type != identifier) {
 				print_parser_error(2, 6);
@@ -693,10 +703,11 @@ void statement_function() {
 					print_parser_error(23, 0);
 					error = 1;
 				}
+
+                // ident -> {
+                token_increment();
 			}
 
-			// {
-			token_index++;
 			// Check for Error 15
 			if (tokens[token_index].type != left_curly_brace) {
 				print_parser_error(15, 0);
@@ -718,11 +729,10 @@ void statement_function() {
 			int jump_index = code_index;
 
 			emit(JMP, 0, 0);
-      
-      		//block function
-      		token_index++;
-      
-      
+
+            // { -> block
+            token_increment();
+
 			block_function();
       
       		if(tokens[token_index].type == right_curly_brace)
@@ -741,11 +751,6 @@ void statement_function() {
 
 			code[jump_index].m = code_index;
 
-			// Uncertain if I should do this because of the block_function inception, so...
-			// }, maybe? If we keep on getting a 16 error, it's likely because of this
-			// On second thought, my use of token_index++ could be problematic in other areas.
-			// Dunno, haven't tested it.
-			token_index++;
 			// Check for Error 16
 			if (tokens[token_index].type != right_curly_brace) {
 				print_parser_error(16, 0);
@@ -761,6 +766,8 @@ void statement_function() {
 
 			break;
 		case keyword_return:
+            // pass over return
+            token_increment();
 
 			if (level == 0)
 				emit(HLT, 0, 0);
@@ -770,41 +777,40 @@ void statement_function() {
       return;
 			break;
 		default:
-			return;
+            return;
 	}
-	// Starting to doubt if I should do this
-	// I mean, it makes sense to me
-	token_index++;
 }
 
 // CONDITION
 void condition_function() {
-  printf("in condition\n");
+    printf("%s\n", "CONDITION");
+
 	expression_function();
-  printf("condition is %d\n",  tokens[token_index].type);
+
 	if (error == -1) {
 		return;
 	}
 
-	// Operator
 	int type = tokens[token_index].type;
 
 	// Check for Error 17
 	if (type != equal_to && type != not_equal_to && type != less_than && type != less_than_or_equal_to &&
 		type != greater_than && type != greater_than_or_equal_to) {
-			print_parser_error(17, 0);
+		print_parser_error(17, 0);
 
-			// If the token is not an identifer, a number, or '(', stopping error.
-			if (type != identifier && type != number && type != left_parenthesis) {
-				error = -1;
-				return;
-			}
+		// If the token is not an identifer, a number, or '(', stopping error.
+		if (type != identifier && type != number && type != left_parenthesis) {
+			error = -1;
+			return;
+		}
 
 		error = 1;
 	}
 
+    // operator -> expression
+    token_increment();
+
 	expression_function();
-  	printf("then is %d\n",  tokens[token_index].type);
 	if (error == -1) {
 		return;
 	}
@@ -835,130 +841,69 @@ void condition_function() {
 
 // EXPRESSION
 void expression_function() {
-  
+    printf("%s\n", "EXPRESSION");
   	term_function();
-   
    
   	if (error == -1) {
   		return;
   	}
-  
-  	// + or -
-    printf("expression in  %d\n", tokens[token_index].type);
     
   	while(tokens[token_index].type == plus || tokens[token_index].type == minus) {
   
+        int type = tokens[token_index].type;
+
+        // term
+        token_increment();
+
   		term_function();
   		if (error == -1) {
   			return;
   		}
-    
       
-      	printf("ADD / SUB\n");
-  		if (tokens[token_index].type == plus)
+  		if (type == plus)
   			emit(ADD, 0, 0);
-  		else if (tokens[token_index].type == minus)
+  		else if (type == minus)
   			emit(SUB, 0, 0);
-  		
-  		//token_index++;
       
   	}
- 
- 	printf("expression out %d\n", tokens[token_index].type);
 }
 
 // TERM
 void term_function() {
+    printf("%s\n", "TERM");
 
 	factor_function();
 	if (error == -1) {
 		return;
 	}
   
-	// * or /
-	token_index++;
-    printf("term in  %d\n", tokens[token_index].type);
-		while(tokens[token_index].type == times || tokens[token_index].type == division) {
+	while(tokens[token_index].type == times || tokens[token_index].type == division) {
     
+        int type = tokens[token_index].type;
+
+        // factor
+        token_increment();
+
 		factor_function();
 		if (error == -1) {
 			return;
 		}
 
-    	printf("MUL / DIV\n");
-		if (tokens[token_index].type == times)
+		if (type == times)
 			emit(MUL, 0, 0);
-		else if(tokens[token_index].type == division)
+		else if(type == division)
 			emit(DIV, 0, 0);
-		
-		token_index++;
-    
+
 	}
- 	printf("term out %d\n", tokens[token_index].type);
 }
 
 // FACTOR
 void factor_function() {
-	
-	// ident
-	token_index++;
-  	printf("ident is %d\n",tokens[token_index].type);
+	printf("%s\n", "FACTOR");
+	// ident, number, ( EXPRESSION )
 
-	// This looks disgusting, but I'm trying to rush this out at this point
-	// Check for Error 20
-	if (tokens[token_index].type != identifier) {
-		if (tokens[token_index].type != number) {
-			if (tokens[token_index].type != left_parenthesis) {
-				print_parser_error(20, 0);
-				
-				int follow = tokens[token_index].type;
-
-				// If the token is not in the follow set, stopping error.
-				if (follow != plus && follow != division && follow != plus && follow != minus && follow != period && follow != right_curly_brace &&
-					follow != semicolon && follow != keyword_end && follow != equal_to && follow != not_equal_to && follow != less_than &&
-					follow != less_than_or_equal_to && follow != greater_than && follow != greater_than_or_equal_to && follow != keyword_then &&
-					follow != keyword_do) {
-						error = -1;        
-						return;
-					}
-				
-				error = 1;
-			}
-			else {
-				
-				// Expression
-        		printf("%d after left parenthesis\n", tokens[token_index].type);
-				expression_function();
-				if (error == -1)
-					return;
-				
-				// Check for Error 19
-				if (tokens[token_index].type != right_parenthesis) {
-					print_parser_error(19, 0);
-
-					int follow = tokens[token_index].type;
-
-					// If the token is not in the follow set, stopping error.
-					if (follow != plus && follow != division && follow != plus && follow != minus && follow != period && follow != right_curly_brace &&
-						follow != semicolon && follow != keyword_end && follow != equal_to && follow != not_equal_to && follow != less_than &&
-						follow != less_than_or_equal_to && follow != greater_than && follow != greater_than_or_equal_to && follow != keyword_then &&
-						follow != keyword_do) {
-							error = -1;
-							return;
-						}
-					
-					error = 1;
-				}
-			}
-		}
-		else {
-			emit(LIT, 0, tokens[token_index].number_value);
-      
-      		printf("after number is %d\n", tokens[token_index].type);
-		}
-	}
-	else {
-		int constant_index = find_symbol(tokens[token_index].identifier_name, 1);
+    if (tokens[token_index].type == identifier) {
+        int constant_index = find_symbol(tokens[token_index].identifier_name, 1);
 		int var_index = find_symbol(tokens[token_index].identifier_name, 2);
 
 		// Check for Error 8-5 and 18
@@ -988,7 +933,151 @@ void factor_function() {
 				emit(LOD, level - table[var_index].level, table[var_index].address);
 			}
 		}
-	}
+
+        // pass over ident
+        token_increment();
+    }
+
+    else if (tokens[token_index].type == number) {
+        emit(LIT, 0, tokens[token_index].number_value);
+
+        // pass over number
+        token_increment();
+    }
+
+    else if (tokens[token_index].type == left_parenthesis) {
+        
+        // ( -> expression
+        token_increment();
+
+        expression_function();
+        if (error == -1)
+            return;
+        
+        // Check for Error 19
+        if (tokens[token_index].type != right_parenthesis) {
+            print_parser_error(19, 0);
+
+            int follow = tokens[token_index].type;
+
+            // If the token is not in the follow set, stopping error.
+            if (follow != plus && follow != division && follow != plus && follow != minus && follow != period && follow != right_curly_brace &&
+                follow != semicolon && follow != keyword_end && follow != equal_to && follow != not_equal_to && follow != less_than &&
+                follow != less_than_or_equal_to && follow != greater_than && follow != greater_than_or_equal_to && follow != keyword_then &&
+                follow != keyword_do) {
+                    error = -1;
+                    return;
+                }
+            
+            error = 1;
+        }
+
+        // Pass over '}'
+        token_increment();
+
+    }
+    // Error 20
+    else {
+        print_parser_error(20, 0);
+				
+		int follow = tokens[token_index].type;
+
+		// If the token is not in the follow set, stopping error.
+		if (follow != plus && follow != division && follow != plus && follow != minus && follow != period && follow != right_curly_brace &&
+			follow != semicolon && follow != keyword_end && follow != equal_to && follow != not_equal_to && follow != less_than &&
+			follow != less_than_or_equal_to && follow != greater_than && follow != greater_than_or_equal_to && follow != keyword_then &&
+			follow != keyword_do) {
+			error = -1;        
+			return;
+		}
+				
+		error = 1;
+    }
+}
+
+// Debug Function
+void token_increment() {
+    token_index++;
+    printf("%s Increment\n", token_type_string(tokens[token_index].type));
+}
+
+void token_decrement() {
+    token_index--;
+    printf("%s Decrement\n", token_type_string(tokens[token_index].type));
+}
+
+
+char* token_type_string(int type) {
+    switch (type) {
+        case identifier:
+            return "ident";
+        case number:
+            return "number";
+        case keyword_const:
+            return "const";
+        case keyword_var:
+            return "var";
+        case keyword_procedure:
+            return "procedure";
+        case keyword_call:
+            return "call";
+        case keyword_begin:
+            return "begin";
+        case keyword_end:
+            return "end";
+        case keyword_if:
+            return "if";
+        case keyword_then:
+            return "then";
+        case keyword_while:
+            return "while";
+        case keyword_do:
+            return "do";
+        case keyword_read:
+            return "read";
+        case keyword_write:
+            return "write";
+        case keyword_return:
+            return "return";
+        case keyword_def:
+            return "def";
+        case period:
+            return ".";
+        case assignment_symbol:
+            return ":=";
+        case minus:
+            return "-";
+        case semicolon:
+            return ";";
+        case left_curly_brace:
+            return "{";
+        case right_curly_brace:
+            return "}";
+        case equal_to:
+            return "==";
+        case not_equal_to:
+            return "!=";
+        case less_than:
+            return "<";
+        case less_than_or_equal_to:
+            return "<=";
+        case greater_than:
+            return ">";
+        case greater_than_or_equal_to:
+            return ">=";
+        case plus:
+            return "+";
+        case times:
+            return "*";
+        case division:
+            return "/";
+        case left_parenthesis:
+            return "(";
+        case right_parenthesis:
+            return ")";
+        default:
+            return "missing";
+    }
 }
 
 // Provided functions
