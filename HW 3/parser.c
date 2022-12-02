@@ -1,3 +1,11 @@
+/* 
+ *  Written by:
+ *    Samuel Georgis
+ *    Evan Goldsmith
+ *    Sean Jackson
+ *    Zander Preston
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,19 +49,21 @@ char* token_type_string(int type);
 
 instruction *parse(int code_flag, int table_flag, lexeme *list)
 {
-
 	tokens = list;
-	table = calloc(ARRAY_SIZE, sizeof(symbol));
-	code = calloc(ARRAY_SIZE, sizeof(instruction));
+	table = (symbol*) calloc(ARRAY_SIZE, sizeof(symbol));
+	code = (instruction*) calloc(ARRAY_SIZE, sizeof(instruction));
 
 	// PROGRAM
 	level = -1;
  
 	block_function();
-  
 	// Checks for stopping errors
-	if (error == -1)
-		return NULL;
+	if (error == -1) {
+        free(table);
+        free(code);
+        return NULL;
+    }
+		
 
 	// Check for Error 1
 	if(tokens[token_index].type != period) {
@@ -61,9 +71,8 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 		print_parser_error(1, 0);
 	}
 
-	// Loop for CAL instructions
+    // Loop for CAL instructions
 	for (int i = 0; i < code_index; i++) {
-
 		if (code[i].op == CAL) {
 			if (code[i].m == -1) {
 				continue;
@@ -96,13 +105,16 @@ instruction *parse(int code_flag, int table_flag, lexeme *list)
 			print_symbol_table();
 		return code;
 	}
+    
+    free(table);
+    free(code);
 	return NULL;
 }
 
 // BLOCK
 void block_function() {
 	level++;
-  
+
 	declarations_function();
 	if (error == -1)
 		return;
@@ -437,7 +449,8 @@ void statement_function() {
 				print_parser_error(2, 4);
 
 				// If the token is not a '.' or a '}', stopping error.
-				if (tokens[token_index].type != period && tokens[token_index].type != right_curly_brace) {
+				if (tokens[token_index].type != period && tokens[token_index].type != right_curly_brace &&
+                    tokens[token_index].type != semicolon && tokens[token_index].type != keyword_end) {
 					error = -1;
 					return;
 				}
@@ -700,18 +713,21 @@ void statement_function() {
 					// Error 14
 					else
 						print_parser_error(14, 0);
-				
+
+                    save_flag = 0;
 				}
-				// Check for Error 22
-				if (table[symbol_index].level != level) {
-					print_parser_error(22, 0);
-					error = 1;
-				}
-				// Check for Error 23
-				else if (table[symbol_index].address != -1) {
-					print_parser_error(23, 0);
-					error = 1;
-				}
+                else {
+                    // Check for Error 22
+                    if (table[symbol_index].level != level) {
+                        print_parser_error(22, 0);
+                        error = 1;
+                    }
+                    // Check for Error 23
+                    else if (table[symbol_index].address != -1) {
+                        print_parser_error(23, 0);
+                        error = 1;
+                    }
+                }
 
                 // ident -> {
                 token_increment();
@@ -743,6 +759,7 @@ void statement_function() {
 
 			emit(JMP, 0, 0);
 
+            // Setting the address to the first instruction in the block
             if (save_flag) {
 				table[symbol_index].address = code_index;
 			}
