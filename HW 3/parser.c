@@ -743,13 +743,13 @@ void statement_function() {
 
 			emit(JMP, 0, 0);
 
+            if (save_flag) {
+				table[symbol_index].address = code_index;
+			}
+
 			block_function();
 			if (error == -1)
 				return;
-
-			if (save_flag) {
-				table[symbol_index].address = code_index;
-			}
 
 			if (code[code_index - 1].op != RTN) {
 				emit(RTN, 0, 0);
